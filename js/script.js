@@ -65,35 +65,100 @@ function showRandomSpaceFact() {
 }
 
 function getVideoEmbedUrl(url) {
-	if (url.includes('youtube.com/watch')) {
-		const videoId = new URL(url).searchParams.get('v');
-		return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+	// Stop if NASA did not provide a URL.
+	if (!url) {
+		return null;
 	}
 
-	if (url.includes('youtu.be/')) {
-		const videoId = new URL(url).pathname.replace('/', '');
-		return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
-	}
+	try {
+		const parsedUrl = new URL(url);
+		const hostname = parsedUrl.hostname.replace(/^www\./, '');
 
-	if (url.includes('youtube.com/embed/')) {
-		return url;
-	}
+		// Regular YouTube link:
+		// https://youtube.com/watch?v=VIDEO_ID
+		if (
+			hostname === 'youtube.com' ||
+			hostname === 'm.youtube.com'
+		) {
+			const videoId = parsedUrl.searchParams.get('v');
 
-	if (url.includes('vimeo.com/')) {
-		const videoId = new URL(url).pathname.split('/').filter(Boolean).pop();
-		return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
-	}
+			if (videoId) {
+				return `https://www.youtube.com/embed/${videoId}`;
+			}
 
-	return null;
+			// YouTube embed, Shorts, or live URL
+			const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+
+			if (
+				pathParts[0] === 'embed' ||
+				pathParts[0] === 'shorts' ||
+				pathParts[0] === 'live'
+			) {
+				const pathVideoId = pathParts[1];
+
+				return pathVideoId
+					? `https://www.youtube.com/embed/${pathVideoId}`
+					: null;
+			}
+		}
+
+		// Short YouTube link:
+		// https://youtu.be/VIDEO_ID
+		if (hostname === 'youtu.be') {
+			const videoId = parsedUrl.pathname.split('/').filter(Boolean)[0];
+
+			return videoId
+				? `https://www.youtube.com/embed/${videoId}`
+				: null;
+		}
+
+		// YouTube privacy-enhanced embed link
+		if (hostname.endsWith('youtube-nocookie.com')) {
+			return url;
+		}
+
+		// Vimeo links
+		if (hostname.endsWith('vimeo.com')) {
+			const pathParts = parsedUrl.pathname.split('/').filter(Boolean);
+
+			// Already an embeddable Vimeo URL
+			if (hostname === 'player.vimeo.com') {
+				return url;
+			}
+
+			const videoId = pathParts.find((part) => /^\d+$/.test(part));
+
+			return videoId
+				? `https://player.vimeo.com/video/${videoId}`
+				: null;
+		}
+
+		// The source is not a supported embeddable service.
+		return null;
+	} catch (error) {
+		console.error('Invalid video URL:', url);
+		return null;
+	}
 }
 
 function resetModalMedia() {
 	modalLoading.hidden = true;
 	modalLoading.textContent = 'Loading image...';
+
+	// Remove old image events and content
+	modalImage.onload = null;
+	modalImage.onerror = null;
 	modalImage.hidden = true;
 	modalImage.removeAttribute('src');
+	modalImage.alt = '';
+
+	// Remove old video events and content
+	modalVideo.onload = null;
+	modalVideo.onerror = null;
 	modalVideo.hidden = true;
 	modalVideo.removeAttribute('src');
+
+	// Hide and reset the fallback video link
 	modalVideoLink.hidden = true;
 	modalVideoLink.removeAttribute('href');
 }
@@ -109,40 +174,70 @@ function openModal(item) {
 	document.body.classList.add('modal-open');
 	closeModalButton.focus();
 
+	// ---------------------------------------------------------
+	// VIDEO ENTRY
+	// ---------------------------------------------------------
 	if (item.media_type === 'video') {
-		const embedUrl = getVideoEmbedUrl(item.url);
+		const originalVideoUrl = item.url;
+		const embedUrl = getVideoEmbedUrl(originalVideoUrl);
 		modalVideoLink.href = item.url;
-		modalVideoLink.textContent = 'Open video in a new tab';
+		modalVideoLink.textContent = 'Watch original video ↗';
 		modalVideoLink.hidden = false;
 
 		if (embedUrl) {
+			modalLoading.textContent = 'Loading video...';
+			modalLoading.hidden = false;
+
+			// Show the iframe before assigning the source.
+			modalVideo.hidden = false;
+			modalVideo.title = item.title || 'NASA APOD video';
+
 			modalVideo.onload = () => {
 				modalLoading.hidden = true;
 				modalVideo.hidden = false;
 			};
+
+			modalVideo.onerror = () => {
+				modalLoading.hidden = true;
+				modalVideo.hidden = true;
+			};
+
 			modalVideo.src = embedUrl;
-			modalVideo.title = item.title;
-			modalLoading.textContent = 'Loading video...';
 			return;
 		}
 
 		modalLoading.hidden = true;
+		modalVideo.hidden = true;
 		return;
 	}
 
-	const previewImage = new Image();
+	// ---------------------------------------------------------
+	// IMAGE ENTRY
+	// ---------------------------------------------------------
+	const imageUrl = item.hdurl || item.url;
+
+	if (!imageUrl) {
+		modalLoading.textContent = 'No image preview is available.';
+		modalLoading.hidden = false;
+		return;
+	}
+
 	modalLoading.textContent = 'Loading image...';
+	modalLoading.hidden = false;
 	modalImage.alt = item.title;
-	previewImage.onload = () => {
-		modalImage.src = previewImage.src;
+
+	modalImage.onload = () => {
 		modalImage.hidden = false;
 		modalLoading.hidden = true;
 	};
-	previewImage.onerror = () => {
-		modalLoading.textContent = 'Unable to load image preview.';
+
+	modalImage.onerror = () => {
 		modalImage.hidden = true;
-	}
-	previewImage.src = item.url;
+		modalLoading.textContent = 'Unable to load image preview.';
+	};
+
+	// Set src after setting onload and onerror.
+	modalImage.src = imageUrl;
 }
 
 function closeModal() {
@@ -161,6 +256,10 @@ async function loadImages() {
 	}
 
 	resultsLabel.textContent = 'Loading NASA images...';
+	const originalButtonText = button.textContent;
+
+	button.disabled = true;
+	button.textContent = 'Loading...';
 
 	gallery.innerHTML = `
 		<div class="placeholder">
@@ -170,8 +269,17 @@ async function loadImages() {
 	`;
 
 	try {
+		// Build the API URL safely.
+		// thumbs=true asks NASA to include thumbnails for video entries.
+		const parameters = new URLSearchParams({
+			api_key: apiKey,
+			start_date: startDate,
+			end_date: endDate,
+			thumbs: 'true'
+		});
+
 		const response = await fetch(
-			`https://api.nasa.gov/planetary/apod?api_key=${apiKey}&start_date=${startDate}&end_date=${endDate}`
+			`https://api.nasa.gov/planetary/apod?${parameters}`
 		);
 
 		if (!response.ok) {
@@ -192,18 +300,50 @@ async function loadImages() {
 				card.setAttribute('aria-label', `Open details for ${item.title}`);
 
 				if (item.media_type === 'video') {
-					card.innerHTML = `
-						<div class="gallery-item-video-preview">
-							<div class="play-badge">▶</div>
-							<p>Video</p>
-						</div>
-						<p><strong>${escapeHtml(item.title)}</strong></p>
-						<p><small>${escapeHtml(item.date)}</small></p>
-					`;
+					// NASA provides thumbnail_url when thumbs=true is included
+					// in the API request.
+					if (item.thumbnail_url) {
+						card.innerHTML = `
+						  <div class="gallery-image-frame gallery-video-frame">
+						    <img
+						      src="${escapeHtml(item.thumbnail_url)}"
+						      alt="Video preview for ${escapeHtml(item.title)}"
+						    />
+						    <div class="video-play-badge" aria-hidden="true">▶</div>
+						  </div>
+
+						  <p>
+						    <strong>${escapeHtml(item.title)}</strong>
+						  </p>
+
+						  <p>
+						    <small>${escapeHtml(item.date)} · Video</small>
+						  </p>
+						`;
+					} else {
+						// Fallback when the API does not provide a thumbnail.
+						card.innerHTML = `
+						  <div class="gallery-item-video-preview">
+						    <div class="play-badge">▶</div>
+						    <p>Video</p>
+						  </div>
+
+						  <p>
+						    <strong>${escapeHtml(item.title)}</strong>
+						  </p>
+
+						  <p>
+						    <small>${escapeHtml(item.date)} · Video</small>
+						  </p>
+						`;
+					}
 				} else {
 					card.innerHTML = `
 						<div class="gallery-image-frame">
-							<img src="${item.url}" alt="${escapeHtml(item.title)}" />
+							<img
+							  src="${escapeHtml(item.url)}"
+							  alt="${escapeHtml(item.title)}"
+							/>
 						</div>
 						<p><strong>${escapeHtml(item.title)}</strong></p>
 						<p><small>${escapeHtml(item.date)}</small></p>
@@ -233,6 +373,8 @@ async function loadImages() {
 			resultsLabel.textContent = '';
 		}
 	} catch (error) {
+		console.error(error);
+
 		resultsLabel.textContent = 'Unable to load NASA images right now.';
 		gallery.innerHTML = `
 			<div class="placeholder">
@@ -240,5 +382,9 @@ async function loadImages() {
 				<p>Unable to load NASA images right now. Please try again.</p>
 			</div>
 		`;
+	} finally {
+		// This runs after either success or failure.
+		button.disabled = false;
+		button.textContent = originalButtonText;
 	}
 }

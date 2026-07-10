@@ -16,6 +16,11 @@
   --nasa-gold: #ffd27a;
 }
 
+/* Make sure JavaScript's hidden property always works */
+[hidden] {
+  display: none !important;
+}
+
 /* Base page styles */
 body {
   font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -110,6 +115,13 @@ button:hover {
   box-shadow: 0 10px 24px rgba(252, 61, 33, 0.3);
 }
 
+button:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+  transform: none;
+  box-shadow: none;
+}
+
 /* Stack horizontally on wider screens */
 @media (min-width: 600px) {
   .filters {
@@ -177,6 +189,7 @@ button:hover {
   height: 240px;
   border-radius: 12px;
   overflow: hidden;
+  position: relative;
 }
 
 .gallery-image-frame img {
@@ -188,6 +201,29 @@ button:hover {
 
 .gallery-item:hover .gallery-image-frame img {
   transform: scale(1.06);
+}
+
+/* Video thumbnail container */
+.gallery-video-frame {
+  position: relative;
+}
+
+/* Play button displayed over a video thumbnail */
+.video-play-badge {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 68px;
+  height: 68px;
+  display: grid;
+  place-items: center;
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: rgba(252, 61, 33, 0.95);
+  color: white;
+  font-size: 28px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.35);
+  pointer-events: none;
 }
 
 .gallery-item-video-preview {
