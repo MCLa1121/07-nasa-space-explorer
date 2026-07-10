@@ -8,6 +8,8 @@ const imageModal = document.getElementById('imageModal');
 const closeModalButton = document.getElementById('closeModal');
 const modalLoading = document.getElementById('modalLoading');
 const modalImage = document.getElementById('modalImage');
+const modalVideo = document.getElementById('modalVideo');
+const modalVideoLink = document.getElementById('modalVideoLink');
 const modalTitle = document.getElementById('modalTitle');
 const modalDate = document.getElementById('modalDate');
 const modalExplanation = document.getElementById('modalExplanation');
@@ -46,23 +48,80 @@ function escapeHtml(value) {
 		.replaceAll("'", '&#39;');
 }
 
+function getVideoEmbedUrl(url) {
+	if (url.includes('youtube.com/watch')) {
+		const videoId = new URL(url).searchParams.get('v');
+		return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+	}
+
+	if (url.includes('youtu.be/')) {
+		const videoId = new URL(url).pathname.replace('/', '');
+		return videoId ? `https://www.youtube.com/embed/${videoId}` : null;
+	}
+
+	if (url.includes('youtube.com/embed/')) {
+		return url;
+	}
+
+	if (url.includes('vimeo.com/')) {
+		const videoId = new URL(url).pathname.split('/').filter(Boolean).pop();
+		return videoId ? `https://player.vimeo.com/video/${videoId}` : null;
+	}
+
+	return null;
+}
+
+function resetModalMedia() {
+	modalLoading.hidden = true;
+	modalLoading.textContent = 'Loading image...';
+	modalImage.hidden = true;
+	modalImage.removeAttribute('src');
+	modalVideo.hidden = true;
+	modalVideo.removeAttribute('src');
+	modalVideoLink.hidden = true;
+	modalVideoLink.removeAttribute('href');
+}
+
 function openModal(item) {
 	modalTitle.textContent = item.title;
 	modalDate.textContent = item.date;
 	modalExplanation.textContent = item.explanation;
+	resetModalMedia();
 	modalLoading.hidden = false;
-	modalLoading.textContent = 'Loading image...';
-	modalImage.hidden = true;
-	modalImage.alt = item.title;
-	modalImage.removeAttribute('src');
-	modalImage.onload = null;
-	modalImage.onerror = null;
 	imageModal.classList.add('is-open');
 	imageModal.setAttribute('aria-hidden', 'false');
 	document.body.classList.add('modal-open');
 	closeModalButton.focus();
 
+	if (item.media_type === 'video') {
+		const embedUrl = getVideoEmbedUrl(item.url);
+
+		if (embedUrl) {
+			modalVideo.onload = () => {
+				modalLoading.hidden = true;
+				modalVideo.hidden = false;
+			};
+			modalVideo.onerror = () => {
+				modalLoading.hidden = true;
+				modalVideoLink.href = item.url;
+				modalVideoLink.hidden = false;
+			};
+			modalVideo.src = embedUrl;
+			modalVideo.title = item.title;
+			modalLoading.textContent = 'Loading video...';
+			return;
+		}
+
+		modalLoading.hidden = true;
+		modalVideoLink.href = item.url;
+		modalVideoLink.hidden = false;
+		modalVideoLink.textContent = 'Open video in a new tab';
+		return;
+	}
+
 	const previewImage = new Image();
+	modalLoading.textContent = 'Loading image...';
+	modalImage.alt = item.title;
 	previewImage.onload = () => {
 		modalImage.src = previewImage.src;
 		modalImage.hidden = false;
@@ -79,9 +138,7 @@ function closeModal() {
 	imageModal.classList.remove('is-open');
 	imageModal.setAttribute('aria-hidden', 'true');
 	document.body.classList.remove('modal-open');
-	modalLoading.hidden = true;
-	modalLoading.textContent = 'Loading image...';
-	modalImage.hidden = true;
+	resetModalMedia();
 }
 
 async function loadImages() {
@@ -112,24 +169,33 @@ async function loadImages() {
 
 		const data = await response.json();
 		const items = Array.isArray(data) ? data : [data];
-		const imageItems = items
-			.filter((item) => item.media_type === 'image')
-			.slice(0, 9);
+		const galleryItems = items.slice(0, 9);
 
 		gallery.innerHTML = '';
 
-		imageItems.forEach((item) => {
+		galleryItems.forEach((item) => {
 				const card = document.createElement('article');
 				card.className = 'gallery-item';
 				card.tabIndex = 0;
 				card.setAttribute('role', 'button');
 				card.setAttribute('aria-label', `Open details for ${item.title}`);
 
-				card.innerHTML = `
-					<img src="${item.url}" alt="${escapeHtml(item.title)}" />
-					<p><strong>${escapeHtml(item.title)}</strong></p>
-					<p><small>${escapeHtml(item.date)}</small></p>
-				`;
+				if (item.media_type === 'video') {
+					card.innerHTML = `
+						<div class="gallery-item-video-preview">
+							<div class="play-badge">▶</div>
+							<p>Video</p>
+						</div>
+						<p><strong>${escapeHtml(item.title)}</strong></p>
+						<p><small>${escapeHtml(item.date)}</small></p>
+					`;
+				} else {
+					card.innerHTML = `
+						<img src="${item.url}" alt="${escapeHtml(item.title)}" />
+						<p><strong>${escapeHtml(item.title)}</strong></p>
+						<p><small>${escapeHtml(item.date)}</small></p>
+					`;
+				}
 
 				card.addEventListener('click', () => openModal(item));
 				card.addEventListener('keydown', (event) => {
@@ -143,11 +209,11 @@ async function loadImages() {
 			});
 
 		if (!gallery.children.length) {
-			resultsLabel.textContent = `No APOD images were found from ${startDate} to ${endDate}.`;
+			resultsLabel.textContent = `No APOD entries were found from ${startDate} to ${endDate}.`;
 			gallery.innerHTML = `
 				<div class="placeholder">
 					<div class="placeholder-icon">🛰️</div>
-					<p>No image results were returned for this date range.</p>
+					<p>No APOD results were returned for this date range.</p>
 				</div>
 			`;
 		} else {

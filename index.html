@@ -19,6 +19,8 @@
       <button>Get Space Images</button>
     </div>
 
+    <p id="spaceFact" class="space-fact" aria-live="polite"></p>
+
     <p id="resultsLabel" class="results-label" aria-live="polite"></p>
 
     <div id="gallery" class="gallery">
@@ -35,6 +37,8 @@
         <div class="modal-media">
           <div id="modalLoading" class="modal-loading" hidden>Loading image...</div>
           <img id="modalImage" class="modal-image" alt="" hidden />
+          <iframe id="modalVideo" class="modal-video" title="APOD video player" hidden allowfullscreen></iframe>
+          <a id="modalVideoLink" class="modal-video-link" href="#" target="_blank" rel="noreferrer noopener" hidden>Open video in a new tab</a>
         </div>
         <h2 id="modalTitle"></h2>
         <p id="modalDate" class="modal-date"></p>

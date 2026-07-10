@@ -164,6 +164,41 @@ button:hover {
   border-radius: 12px;
 }
 
+.gallery-item-video-preview {
+  width: 100%;
+  height: 240px;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  background:
+    radial-gradient(circle at top, rgba(252, 61, 33, 0.22), transparent 46%),
+    linear-gradient(135deg, rgba(11, 61, 145, 0.92), rgba(6, 22, 47, 0.98));
+  color: var(--nasa-text);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.gallery-item-video-preview .play-badge {
+  width: 64px;
+  height: 64px;
+  border-radius: 999px;
+  display: grid;
+  place-items: center;
+  background: rgba(252, 61, 33, 0.95);
+  font-size: 28px;
+  box-shadow: 0 12px 24px rgba(252, 61, 33, 0.25);
+}
+
+.gallery-item-video-preview p {
+  margin: 0;
+  padding: 0;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
 .gallery-item p {
   margin-top: 10px;
   padding: 5px;
@@ -242,6 +277,34 @@ button:hover {
   height: 100%;
   object-fit: cover;
   display: block;
+}
+
+.modal-video {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+}
+
+.modal-video-link {
+  position: absolute;
+  left: 16px;
+  bottom: 16px;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 14px;
+  border-radius: 999px;
+  background: rgba(252, 61, 33, 0.95);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: 700;
+  box-shadow: 0 10px 22px rgba(252, 61, 33, 0.26);
+}
+
+.modal-video-link:hover {
+  background: #ff5d45;
 }
 
 .modal-content h2 {
