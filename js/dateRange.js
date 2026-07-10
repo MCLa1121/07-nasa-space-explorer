@@ -14,17 +14,17 @@ function setupDateInputs(startInput, endInput) {
   endInput.min = earliestDate;
   endInput.max = today;
 
-  // Default: Show the most recent 9 days of space images
+  // Default: Show a 10-day range so the gallery can still return 9 images
   const lastWeek = new Date();
-  lastWeek.setDate(lastWeek.getDate() - 8); // minus 8 because it includes today
+  lastWeek.setDate(lastWeek.getDate() - 9); // minus 9 because it includes today
   startInput.value = lastWeek.toISOString().split('T')[0];
   endInput.value = today;
 
-  // Automatically adjust end date to show exactly 9 days of images
+  // Automatically adjust end date to keep a 10-day range
   startInput.addEventListener('change', () => {
     const startDate = new Date(startInput.value);
     const endDate = new Date(startDate);
-    endDate.setDate(startDate.getDate() + 8);
+    endDate.setDate(startDate.getDate() + 9);
     endInput.value = endDate > new Date(today) ? today : endDate.toISOString().split('T')[0];
   });
 }
