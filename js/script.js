@@ -111,16 +111,14 @@ function openModal(item) {
 
 	if (item.media_type === 'video') {
 		const embedUrl = getVideoEmbedUrl(item.url);
+		modalVideoLink.href = item.url;
+		modalVideoLink.textContent = 'Open video in a new tab';
+		modalVideoLink.hidden = false;
 
 		if (embedUrl) {
 			modalVideo.onload = () => {
 				modalLoading.hidden = true;
 				modalVideo.hidden = false;
-			};
-			modalVideo.onerror = () => {
-				modalLoading.hidden = true;
-				modalVideoLink.href = item.url;
-				modalVideoLink.hidden = false;
 			};
 			modalVideo.src = embedUrl;
 			modalVideo.title = item.title;
@@ -129,9 +127,6 @@ function openModal(item) {
 		}
 
 		modalLoading.hidden = true;
-		modalVideoLink.href = item.url;
-		modalVideoLink.hidden = false;
-		modalVideoLink.textContent = 'Open video in a new tab';
 		return;
 	}
 
