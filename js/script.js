@@ -2,6 +2,7 @@
 const startInput = document.getElementById('startDate');
 const endInput = document.getElementById('endDate');
 const gallery = document.getElementById('gallery');
+const spaceFact = document.getElementById('spaceFact');
 const resultsLabel = document.getElementById('resultsLabel');
 const button = document.querySelector('button');
 const imageModal = document.getElementById('imageModal');
@@ -22,6 +23,8 @@ const apiKey = '6IEjw8j1Ir3XC8zSr1eIwyJ7XQC0uMteTt3n9MeO';
 // - Default to a range of 9 days (from 9 days ago to today)
 // - Restrict dates to NASA's image archive (starting from 1995)
 setupDateInputs(startInput, endInput);
+
+showRandomSpaceFact();
 
 // Load the first gallery automatically so the page is useful right away.
 loadImages();
@@ -46,6 +49,19 @@ function escapeHtml(value) {
 		.replaceAll('>', '&gt;')
 		.replaceAll('"', '&quot;')
 		.replaceAll("'", '&#39;');
+}
+
+function showRandomSpaceFact() {
+	const facts = [
+		'You could fit about 1.3 million Earths inside the Sun.',
+		'One day on Venus is longer than one year on Venus.',
+		'Neutron stars can spin around 600 times per second.',
+		'Jupiter has the shortest day of all the planets in our solar system.',
+		'The first image ever taken of a black hole was released in 2019.'
+	];
+
+	const randomFact = facts[Math.floor(Math.random() * facts.length)];
+	spaceFact.textContent = `Did You Know? ${randomFact}`;
 }
 
 function getVideoEmbedUrl(url) {
@@ -191,7 +207,9 @@ async function loadImages() {
 					`;
 				} else {
 					card.innerHTML = `
-						<img src="${item.url}" alt="${escapeHtml(item.title)}" />
+						<div class="gallery-image-frame">
+							<img src="${item.url}" alt="${escapeHtml(item.title)}" />
+						</div>
 						<p><strong>${escapeHtml(item.title)}</strong></p>
 						<p><small>${escapeHtml(item.date)}</small></p>
 					`;

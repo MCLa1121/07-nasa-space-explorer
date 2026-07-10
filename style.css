@@ -64,6 +64,14 @@ h1 {
   min-height: 1.5em;
 }
 
+.space-fact {
+  text-align: center;
+  color: var(--nasa-text);
+  margin: 6px 0 12px;
+  font-size: 0.95rem;
+  letter-spacing: 0.02em;
+}
+
 /* Date‐picker & button row */
 .filters {
   display: flex;
@@ -162,6 +170,24 @@ button:hover {
   height: 240px;
   object-fit: cover;
   border-radius: 12px;
+}
+
+.gallery-image-frame {
+  width: 100%;
+  height: 240px;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.gallery-image-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.gallery-item:hover .gallery-image-frame img {
+  transform: scale(1.06);
 }
 
 .gallery-item-video-preview {
