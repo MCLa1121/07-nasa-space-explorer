@@ -5,13 +5,24 @@
   padding: 0;
 }
 
+:root {
+  --nasa-red: #fc3d21;
+  --nasa-blue: #0b3d91;
+  --nasa-navy: #06162f;
+  --nasa-ink: #0a1220;
+  --nasa-surface: rgba(8, 20, 44, 0.92);
+  --nasa-text: #f4f7fb;
+  --nasa-muted: #c6d4ea;
+  --nasa-gold: #ffd27a;
+}
+
 /* Base page styles */
 body {
-  font-family: Arial, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   background:
-    radial-gradient(circle at top, rgba(28, 47, 90, 0.95), rgba(9, 14, 28, 0.98) 55%),
-    linear-gradient(180deg, #0a1020 0%, #11182a 100%);
-  color: #f4f7fb;
+    radial-gradient(circle at top, rgba(11, 61, 145, 0.55), rgba(6, 22, 47, 0.96) 58%),
+    linear-gradient(180deg, #050d1c 0%, #081427 100%);
+  color: var(--nasa-text);
   min-height: 100vh;
   padding: 20px;
 }
@@ -33,10 +44,11 @@ body {
 }
 
 h1 {
-  font-family: Verdana, sans-serif;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
   font-weight: bold;
-  color: #f4f7fb;
-  letter-spacing: 0.03em;
+  color: var(--nasa-text);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
 }
 
 /* Logo */
@@ -47,7 +59,7 @@ h1 {
 
 .results-label {
   text-align: center;
-  color: #c8d4ef;
+  color: var(--nasa-muted);
   margin-bottom: 10px;
   min-height: 1.5em;
 }
@@ -65,9 +77,9 @@ h1 {
 /* Inputs and buttons */
 input[type="date"],
 button {
-  font-family: Arial, sans-serif;
-  font-weight: normal;
-  color: #14213d;
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-weight: 600;
+  color: var(--nasa-ink);
   padding: 10px 15px;
   border: 1px solid rgba(255, 255, 255, 0.18);
   border-radius: 10px;
@@ -79,15 +91,15 @@ button {
 
 /* Button specific */
 button {
-  background: linear-gradient(135deg, #ffd166, #fca311);
-  color: #1b1b1b;
+  background: linear-gradient(135deg, var(--nasa-red), #ff6b4a);
+  color: #ffffff;
   font-weight: bold;
   cursor: pointer;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 button:hover {
   transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(252, 163, 17, 0.25);
+  box-shadow: 0 10px 24px rgba(252, 61, 33, 0.3);
 }
 
 /* Stack horizontally on wider screens */
@@ -117,11 +129,11 @@ button:hover {
   flex: 1 1 100%;  /* full width by default */
   min-width: 280px;
   max-width: 500px;
-  background: rgba(10, 16, 32, 0.88);
-  color: #eef2ff;
+  background: var(--nasa-surface);
+  color: var(--nasa-text);
   padding: 12px;
   border-radius: 16px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 0 14px 30px rgba(0,0,0,0.25);
   overflow: hidden;
   display: flex;
@@ -164,7 +176,7 @@ button:hover {
   flex: 1 1 100%;
   text-align: center;
   padding: 40px;
-  color: #c8d4ef;
+  color: var(--nasa-muted);
 }
 
 .placeholder-icon {
@@ -201,7 +213,7 @@ button:hover {
   overflow: auto;
   padding: 20px;
   border-radius: 20px;
-  background: rgba(10, 16, 32, 0.98);
+  background: rgba(6, 22, 47, 0.98);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
 }
@@ -221,8 +233,8 @@ button:hover {
   inset: 0;
   display: grid;
   place-items: center;
-  color: #c8d4ef;
-  background: rgba(10, 16, 32, 0.75);
+  color: var(--nasa-muted);
+  background: rgba(6, 22, 47, 0.82);
 }
 
 .modal-image {
@@ -238,12 +250,12 @@ button:hover {
 }
 
 .modal-date {
-  color: #f3c86a;
+  color: var(--nasa-gold);
   margin-bottom: 14px;
 }
 
 .modal-explanation {
-  color: #d9e2f2;
+  color: var(--nasa-text);
   line-height: 1.7;
 }
 
@@ -256,8 +268,8 @@ button:hover {
   height: 42px;
   border-radius: 999px;
   border: none;
-  background: rgba(255, 255, 255, 0.12);
-  color: #f4f7fb;
+  background: rgba(252, 61, 33, 0.15);
+  color: var(--nasa-text);
   font-size: 28px;
   line-height: 1;
 }

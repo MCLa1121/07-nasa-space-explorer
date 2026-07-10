@@ -50,32 +50,29 @@ function openModal(item) {
 	modalTitle.textContent = item.title;
 	modalDate.textContent = item.date;
 	modalExplanation.textContent = item.explanation;
-	modalImage.hidden = true;
-	modalImage.alt = item.title;
-	modalImage.onload = null;
-	modalImage.onerror = null;
 	modalLoading.hidden = false;
 	modalLoading.textContent = 'Loading image...';
+	modalImage.hidden = true;
+	modalImage.alt = item.title;
+	modalImage.removeAttribute('src');
+	modalImage.onload = null;
+	modalImage.onerror = null;
 	imageModal.classList.add('is-open');
 	imageModal.setAttribute('aria-hidden', 'false');
 	document.body.classList.add('modal-open');
 	closeModalButton.focus();
 
-	modalImage.onload = () => {
-		modalLoading.hidden = true;
+	const previewImage = new Image();
+	previewImage.onload = () => {
+		modalImage.src = previewImage.src;
 		modalImage.hidden = false;
+		modalLoading.hidden = true;
 	};
-	modalImage.onerror = () => {
-		modalImage.hidden = true;
-		modalLoading.hidden = false;
+	previewImage.onerror = () => {
 		modalLoading.textContent = 'Unable to load image preview.';
-	};
-	modalImage.src = item.url;
-
-	if (modalImage.complete && modalImage.naturalWidth > 0) {
-		modalLoading.hidden = true;
-		modalImage.hidden = false;
+		modalImage.hidden = true;
 	}
+	previewImage.src = item.url;
 }
 
 function closeModal() {
@@ -95,7 +92,7 @@ async function loadImages() {
 		return;
 	}
 
-	resultsLabel.textContent = `Showing APOD images from ${startDate} to ${endDate}.`;
+	resultsLabel.textContent = 'Loading NASA images...';
 
 	gallery.innerHTML = `
 		<div class="placeholder">
@@ -154,7 +151,7 @@ async function loadImages() {
 				</div>
 			`;
 		} else {
-			resultsLabel.textContent = `Showing ${gallery.children.length} APOD images from ${startDate} to ${endDate}.`;
+			resultsLabel.textContent = '';
 		}
 	} catch (error) {
 		resultsLabel.textContent = 'Unable to load NASA images right now.';
