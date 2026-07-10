@@ -6,6 +6,7 @@ const resultsLabel = document.getElementById('resultsLabel');
 const button = document.querySelector('button');
 const imageModal = document.getElementById('imageModal');
 const closeModalButton = document.getElementById('closeModal');
+const modalLoading = document.getElementById('modalLoading');
 const modalImage = document.getElementById('modalImage');
 const modalTitle = document.getElementById('modalTitle');
 const modalDate = document.getElementById('modalDate');
@@ -46,21 +47,44 @@ function escapeHtml(value) {
 }
 
 function openModal(item) {
-	modalImage.src = item.hdurl || item.url;
-	modalImage.alt = item.title;
 	modalTitle.textContent = item.title;
 	modalDate.textContent = item.date;
 	modalExplanation.textContent = item.explanation;
+	modalImage.hidden = true;
+	modalImage.alt = item.title;
+	modalImage.onload = null;
+	modalImage.onerror = null;
+	modalLoading.hidden = false;
+	modalLoading.textContent = 'Loading image...';
 	imageModal.classList.add('is-open');
 	imageModal.setAttribute('aria-hidden', 'false');
 	document.body.classList.add('modal-open');
 	closeModalButton.focus();
+
+	modalImage.onload = () => {
+		modalLoading.hidden = true;
+		modalImage.hidden = false;
+	};
+	modalImage.onerror = () => {
+		modalImage.hidden = true;
+		modalLoading.hidden = false;
+		modalLoading.textContent = 'Unable to load image preview.';
+	};
+	modalImage.src = item.url;
+
+	if (modalImage.complete && modalImage.naturalWidth > 0) {
+		modalLoading.hidden = true;
+		modalImage.hidden = false;
+	}
 }
 
 function closeModal() {
 	imageModal.classList.remove('is-open');
 	imageModal.setAttribute('aria-hidden', 'true');
 	document.body.classList.remove('modal-open');
+	modalLoading.hidden = true;
+	modalLoading.textContent = 'Loading image...';
+	modalImage.hidden = true;
 }
 
 async function loadImages() {

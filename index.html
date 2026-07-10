@@ -32,7 +32,10 @@
       <div class="modal-backdrop" data-close-modal></div>
       <div class="modal-content" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
         <button id="closeModal" class="modal-close" type="button" aria-label="Close image details">×</button>
-        <img id="modalImage" class="modal-image" alt="" />
+        <div class="modal-media">
+          <div id="modalLoading" class="modal-loading" hidden>Loading image...</div>
+          <img id="modalImage" class="modal-image" alt="" hidden />
+        </div>
         <h2 id="modalTitle"></h2>
         <p id="modalDate" class="modal-date"></p>
         <p id="modalExplanation" class="modal-explanation"></p>
