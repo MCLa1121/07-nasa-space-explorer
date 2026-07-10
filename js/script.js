@@ -4,6 +4,12 @@ const endInput = document.getElementById('endDate');
 const gallery = document.getElementById('gallery');
 const resultsLabel = document.getElementById('resultsLabel');
 const button = document.querySelector('button');
+const imageModal = document.getElementById('imageModal');
+const closeModalButton = document.getElementById('closeModal');
+const modalImage = document.getElementById('modalImage');
+const modalTitle = document.getElementById('modalTitle');
+const modalDate = document.getElementById('modalDate');
+const modalExplanation = document.getElementById('modalExplanation');
 
 // NASA APOD API key provided for this project
 const apiKey = '6IEjw8j1Ir3XC8zSr1eIwyJ7XQC0uMteTt3n9MeO';
@@ -18,6 +24,44 @@ setupDateInputs(startInput, endInput);
 loadImages();
 
 button.addEventListener('click', loadImages);
+closeModalButton.addEventListener('click', closeModal);
+imageModal.addEventListener('click', (event) => {
+	if (event.target.hasAttribute('data-close-modal')) {
+		closeModal();
+	}
+});
+document.addEventListener('keydown', (event) => {
+	if (event.key === 'Escape') {
+		closeModal();
+	}
+});
+
+function escapeHtml(value) {
+	return value
+		.replaceAll('&', '&amp;')
+		.replaceAll('<', '&lt;')
+		.replaceAll('>', '&gt;')
+		.replaceAll('"', '&quot;')
+		.replaceAll("'", '&#39;');
+}
+
+function openModal(item) {
+	modalImage.src = item.hdurl || item.url;
+	modalImage.alt = item.title;
+	modalTitle.textContent = item.title;
+	modalDate.textContent = item.date;
+	modalExplanation.textContent = item.explanation;
+	imageModal.classList.add('is-open');
+	imageModal.setAttribute('aria-hidden', 'false');
+	document.body.classList.add('modal-open');
+	closeModalButton.focus();
+}
+
+function closeModal() {
+	imageModal.classList.remove('is-open');
+	imageModal.setAttribute('aria-hidden', 'true');
+	document.body.classList.remove('modal-open');
+}
 
 async function loadImages() {
 	const startDate = startInput.value;
@@ -56,12 +100,23 @@ async function loadImages() {
 		imageItems.forEach((item) => {
 				const card = document.createElement('article');
 				card.className = 'gallery-item';
+				card.tabIndex = 0;
+				card.setAttribute('role', 'button');
+				card.setAttribute('aria-label', `Open details for ${item.title}`);
 
 				card.innerHTML = `
-					<img src="${item.url}" alt="${item.title}" />
-					<p><strong>${item.title}</strong></p>
-					<p><small>${item.date}</small></p>
+					<img src="${item.url}" alt="${escapeHtml(item.title)}" />
+					<p><strong>${escapeHtml(item.title)}</strong></p>
+					<p><small>${escapeHtml(item.date)}</small></p>
 				`;
+
+				card.addEventListener('click', () => openModal(item));
+				card.addEventListener('keydown', (event) => {
+					if (event.key === 'Enter' || event.key === ' ') {
+						event.preventDefault();
+						openModal(item);
+					}
+				});
 
 				gallery.appendChild(card);
 			});
